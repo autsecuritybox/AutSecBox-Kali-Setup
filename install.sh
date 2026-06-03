@@ -769,6 +769,9 @@ setxkbmap -layout us &
 # Autorandr para multi-monitor
 command -v autorandr &>/dev/null && autorandr --change &
 
+# Clipboard VMware (integración host ↔ VM)
+pgrep -x vmware-user >/dev/null || vmware-user &
+
 BSPWMRC
     chmod +x "$CONFIG_DIR/bspwm/bspwmrc"
     ok "bspwmrc generado"
@@ -1841,6 +1844,9 @@ plugins=(
     pip
 )
 
+# --- Pre oh-my-zsh custom config ---
+[[ -f ~/.zshrc.pre-oh-my-zsh ]] && source ~/.zshrc.pre-oh-my-zsh
+
 source $ZSH/oh-my-zsh.sh
 
 # --- Autocompletado (zsh-autocomplete - cargar aparte) ---
@@ -1917,7 +1923,14 @@ if [[ $- == *i* ]] && [[ -z "$INSIDE_WELCOME" ]]; then
 fi
 
 ZSHRC
-    ok ".zshrc generado"
+
+    # Archivo pre-oh-my-zsh: se carga antes de omz, util para aliases de sistema
+    cat > "$HOME_DIR/.zshrc.pre-oh-my-zsh" << 'PREZSHRC'
+# AutSecurity Box - pre-oh-my-zsh
+# Cargado antes de Oh My Zsh — para aliases que deben definirse primero
+alias cat='/usr/bin/batcat'
+PREZSHRC
+    ok ".zshrc y .zshrc.pre-oh-my-zsh generados"
 }
 
 # ---------------------------------------------------------------------------
@@ -2640,7 +2653,7 @@ setup_root_user() {
     fi
 
     # Copiar dotfiles al home de root
-    for dotfile in .zshrc .p10k.zsh .aliases; do
+    for dotfile in .zshrc .p10k.zsh .aliases .zshrc.pre-oh-my-zsh; do
         if [[ -f "$HOME_DIR/$dotfile" ]]; then
             sudo cp "$HOME_DIR/$dotfile" "/root/$dotfile"
         fi
