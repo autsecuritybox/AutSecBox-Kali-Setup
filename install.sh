@@ -615,11 +615,14 @@ esac
 SCOPEEOF
 
     # xpaste: pegado inteligente (detecta terminal vs GUI)
+    # Usa xprop para obtener WM_CLASS porque xdotool getwindowclassname
+    # no existe en versiones modernas de xdotool (el comando fue removido).
     cat > /usr/local/bin/xpaste << 'XPASTEEOF'
 #!/usr/bin/env bash
 export DISPLAY=:0
 export XAUTHORITY="$HOME/.Xauthority"
-CLASS=$(xdotool getactivewindow getwindowclassname 2>/dev/null | tr '[:upper:]' '[:lower:]')
+WINID=$(xdotool getactivewindow 2>/dev/null)
+CLASS=$(xprop -id "$WINID" WM_CLASS 2>/dev/null | grep -oP '"[^"]*"' | tail -1 | tr -d '"' | tr '[:upper:]' '[:lower:]')
 case "$CLASS" in
     *kitty*|*xterm*|*alacritty*|*terminal*|*konsole*|*tilix*)
         xdotool key --clearmodifiers ctrl+shift+v ;;
