@@ -368,31 +368,17 @@ install_fzf() {
 install_pentesting_tools() {
     section "HERRAMIENTAS DE PENTESTING"
 
-    # Paquetes apt disponibles en Kali
+    # Solo herramientas que NO vienen preinstaladas en kali-linux-default.
+    # Excluidos: nmap, metasploit, john, hashcat, sqlmap, nikto, wireshark,
+    # aircrack-ng, wifite, kismet, hydra, medusa, gobuster, crackmapexec,
+    # responder, bettercap, theharvester, maltego, wordlists, seclists,
+    # burpsuite, firefox-esr, vim, htop, tmux, net-tools, dnsutils, whois,
+    # python3-impacket, enum4linux (viejo), dirbuster (viejo).
     local apt_tools=(
-        nmap masscan
-        gobuster ffuf feroxbuster
-        metasploit-framework
-        bloodhound neo4j
-        crackmapexec
-        evil-winrm
-        john hashcat hashid
-        seclists
-        whatweb
-        enum4linux
-        sqlmap
-        nikto
-        wireshark-qt tcpdump
-        aircrack-ng wifite kismet
-        hydra medusa
-        netcat-openbsd socat
-        python3-impacket
-        responder
-        bettercap
-        theharvester
-        maltego
-        wordlists
-        dirbuster
+        # Escaneo y fuzzing web (no en default)
+        masscan
+        ffuf
+        feroxbuster
         wpscan
         nuclei
         amass
@@ -400,15 +386,26 @@ install_pentesting_tools() {
         httpx-toolkit
         dnsx
         katana
-        net-tools dnsutils whois
+
+        # Post-explotacion y AD (no en default)
+        bloodhound
+        neo4j
+        evil-winrm
+        netexec
+
+        # Networking
+        netcat-openbsd
+        socat
+
+        # Archivos y datos
         p7zip-full rar unrar
         jq yq
-        tmux screen
+
+        # CLI moderna (no en default)
         bat fd-find ripgrep
-        htop btop
-        vim neovim
-        firefox-esr
-        burpsuite
+        screen
+        btop
+        neovim
     )
 
     step "Instalando herramientas de pentesting via apt..."
@@ -431,20 +428,21 @@ install_pentesting_tools() {
 }
 
 install_pip_tools() {
-    section "HERRAMIENTAS VIA PIP"
+    section "HERRAMIENTAS VIA PIPX"
+    # Solo herramientas con comandos propios que no estan en kali-linux-default.
+    # Excluidos: requests, beautifulsoup4, pycryptodome (librerias Python, no
+    # aplicaciones — pipx no aplica). python3-impacket ya viene en Kali, pero
+    # pipx impacket da los scripts standalone (secretsdump, psexec, etc.).
     local pip_tools=(
         "impacket"
         "ldapdomaindump"
         "certipy-ad"
         "pwntools"
-        "requests"
-        "beautifulsoup4"
-        "pycryptodome"
         "netexec"
     )
 
     for tool in "${pip_tools[@]}"; do
-        step "pip: $tool"
+        step "pipx: $tool"
         pipx install "$tool" >> "$LOG_FILE" 2>&1 \
             && ok "pipx: $tool instalado" \
             || warn "pipx: fallo $tool (puede ya estar instalado)"
@@ -473,15 +471,11 @@ install_go_tools() {
     export GOPATH="$HOME_DIR/go"
     export PATH="$PATH:/usr/local/go/bin:$GOPATH/bin"
 
+    # gobuster, ffuf, nuclei, subfinder, httpx, dnsx, katana ya estan en apt
+    # de Kali — no tiene sentido duplicar con go install.
+    # kerbrute no tiene paquete apt confiable, se instala via go.
     local go_tools=(
-        "github.com/OJ/gobuster/v3@latest"
-        "github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest"
-        "github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest"
-        "github.com/projectdiscovery/httpx/cmd/httpx@latest"
-        "github.com/projectdiscovery/dnsx/cmd/dnsx@latest"
-        "github.com/projectdiscovery/katana/cmd/katana@latest"
         "github.com/ropnop/kerbrute@latest"
-        "github.com/ffuf/ffuf/v2@latest"
     )
 
     for tool in "${go_tools[@]}"; do
