@@ -1261,6 +1261,21 @@ generate_picom() {
 # xrender: mas estable con bspwm, sin bugs de renderizado en terminales
 backend = "xrender";
 
+# --- Sincronizacion (fix tearing en VM) ---
+# El driver vmwgfx (VMware) y los drivers KMS simulan el vblank por software.
+# Sin estas dos opciones aparecen "cuadros" con imagen vieja (ghosting) y
+# tearing al cambiar ventanas o abrir el navegador.
+#
+# xrender-sync-fence: usa X Sync fences para garantizar que el renderizado
+# termina antes del swap de buffer. Necesario cuando el vblank no es hardware.
+xrender-sync-fence = true;
+#
+# use-damage = false: fuerza redibujado completo del frame en lugar de solo
+# las regiones "danadas". El driver vmwgfx no reporta damage correctamente,
+# causando que picom omita redibujar zonas que si cambiaron. Costo minimo
+# en VM porque el driver hace su propio damage tracking a nivel kernel.
+use-damage = false;
+
 # --- Sombras ---
 shadow = true;
 shadow-radius = 15;
@@ -1272,7 +1287,7 @@ shadow-exclude = [
     "class_g = 'Conky'",
     "class_g ?= 'Notify-osd'",
     "class_g = 'Cairo-clock'",
-    "_GTK_FRAME_EXTENTS@:c",
+    "_GTK_FRAME_EXTENTS@",
     "class_g = 'slop'",
     "class_g = 'Polybar'"
 ];
